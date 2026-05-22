@@ -1,0 +1,29 @@
+groups:
+  - name: kubernetes_alerts
+    rules:
+      - alert: PodCrashLooping
+        expr: rate(kube_pod_container_status_restarts_total[5m]) * 60 * 5 > 5
+        for: 5m
+        labels: {severity: critical}
+        annotations:
+          summary: "Pod crash looping: {{ $labels.namespace }}/{{ $labels.pod }}"
+
+      - alert: NodeNotReady
+        expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+        for: 2m
+        labels: {severity: critical}
+        annotations:
+          summary: "Kubernetes node not ready: {{ $labels.node }}"
+
+      - alert: PVCPending
+        expr: kube_persistentvolumeclaim_status_phase{phase="Pending"} == 1
+        for: 5m
+        labels: {severity: warning}
+        annotations:
+          summary: "PVC pending: {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }}"
+
+      - alert: HighPodRestarts
+        expr: kube_pod_container_status_restarts_total > 20
+        labels: {severity: warning}
+        annotations:
+          summary: "High restart count: {{ $labels.namespace }}/{{ $labels.pod }}"

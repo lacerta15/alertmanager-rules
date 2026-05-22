@@ -1,0 +1,34 @@
+groups:
+  - name: cloudera_alerts
+    rules:
+      - alert: HDFSCorruptBlocks
+        expr: hadoop_namenode_corruptblocks > 0
+        for: 1m
+        labels: {severity: critical}
+        annotations:
+          summary: "HDFS corrupt blocks on {{ $labels.instance }}"
+          description: "{{ $value }} corrupt blocks detected"
+
+      - alert: HDFSMissingBlocks
+        expr: hadoop_namenode_missingblocks > 0
+        for: 1m
+        labels: {severity: critical}
+        annotations:
+          summary: "HDFS missing blocks"
+          description: "{{ $value }} blocks missing — data loss possible"
+
+      - alert: YARNNodeLost
+        expr: hadoop_resourcemanager_numlostnms > 0
+        for: 2m
+        labels: {severity: warning}
+        annotations:
+          summary: "YARN NodeManager lost"
+          description: "{{ $value }} NodeManagers are lost"
+
+      - alert: HDFSLowDiskSpace
+        expr: (hadoop_namenode_capacityremaining / hadoop_namenode_capacitytotal) * 100 < 15
+        for: 5m
+        labels: {severity: warning}
+        annotations:
+          summary: "HDFS disk space low"
+          description: "Only {{ $value | printf "%.1f" }}% HDFS capacity remaining"

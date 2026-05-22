@@ -1,0 +1,16 @@
+groups:
+  - name: security_alerts
+    rules:
+      - alert: HighSSHFailures
+        expr: rate(node_auth_failed_attempts_total[5m]) > 10
+        for: 2m
+        labels: {severity: warning}
+        annotations:
+          summary: "High SSH failures on {{ $labels.instance }}"
+          description: "Possible brute-force: {{ $value | printf "%.0f" }} attempts/min"
+
+      - alert: RootLoginAttempt
+        expr: increase(node_systemd_unit_state{name="sshd.service"}[5m]) > 0
+        labels: {severity: warning}
+        annotations:
+          summary: "Potential root login on {{ $labels.instance }}"

@@ -1,0 +1,35 @@
+groups:
+  - name: linux_alerts
+    rules:
+      - alert: HostHighCPU
+        expr: 100 - (avg by(instance)(rate(node_cpu_seconds_total{mode="idle"}[5m]))*100) > 85
+        for: 10m
+        labels: {severity: warning}
+        annotations:
+          summary: "High CPU on {{ $labels.instance }}"
+
+      - alert: HostMemoryPressure
+        expr: (1-node_memory_MemAvailable_bytes/node_memory_MemTotal_bytes)*100 > 90
+        for: 5m
+        labels: {severity: critical}
+        annotations:
+          summary: "Critical memory usage on {{ $labels.instance }}"
+
+      - alert: HostDiskWillFillIn4h
+        expr: predict_linear(node_filesystem_avail_bytes[1h], 4*3600) < 0
+        for: 5m
+        labels: {severity: critical}
+        annotations:
+          summary: "Disk will fill in 4h on {{ $labels.instance }}"
+
+      - alert: HostOOMKill
+        expr: increase(node_vmstat_oom_kill[5m]) > 0
+        labels: {severity: critical}
+        annotations:
+          summary: "OOM kill detected on {{ $labels.instance }}"
+
+      - alert: HostSSHFailed
+        expr: increase(node_systemd_unit_state{name="sshd.service",state="failed"}[5m]) > 0
+        labels: {severity: critical}
+        annotations:
+          summary: "SSHD failed on {{ $labels.instance }}"
